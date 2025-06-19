@@ -1,0 +1,6 @@
+[project]
+name = "hironexagent"
+version = "0.1.0"
+description = "Personal Super Agent For NickLLin"
+requires-python = ">=3.12"
+dependencies = []
