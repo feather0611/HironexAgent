@@ -17,7 +17,7 @@ def test_get_geocode_of_location_single_valid_result(mocker):
     mock_response.json.return_value = mock_api_response
     mocker.patch("agent.utils.tools.weather_tools.requests.get", return_value=mock_response)
 
-    result = get_geocode_of_location('', '')
+    result = get_geocode_of_location('汐止', 'fake_google_api_key')
 
     assert isinstance(result, list)
     assert len(result) == 1
