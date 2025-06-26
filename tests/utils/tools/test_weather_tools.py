@@ -151,16 +151,22 @@ def test_get_weather_by_coords_success(mocker, api_response, expected_result):
     assert isinstance(result, dict)
     assert result == expected_result
     
-def test_get_weather_by_coords_unauthorized(mocker):
-    setup_mock_api_response(mocker, status_code=401, json_response=WEATHER_UNAUTHORIZED_RESULT)
-
+@pytest.mark.parametrize(
+    "setup_function",
+    [
+        pytest.param(
+            lambda m: setup_mock_api_response(m, status_code=401, json_response=WEATHER_UNAUTHORIZED_RESULT),
+            id="case_unauthorized_response"
+        ),
+        pytest.param(
+            lambda m: setup_mock_network_exception(m),
+            id="case_network_exception"
+        )
+    ]
+)
+def test_get_weather_by_coords_failure_cases(mocker, setup_function):
+    setup_function(mocker)
+    
     result = get_weather_by_coords(22.980, 120.230, "invalid_api_key")
-
-    assert result is None
-
-def test_get_weather_by_coords_network_error(mocker):
-    setup_mock_network_exception(mocker)
-
-    result = get_weather_by_coords(22.980, 120.230, "any_api_key")
 
     assert result is None
