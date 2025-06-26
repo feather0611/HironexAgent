@@ -40,7 +40,7 @@ def get_weather_by_coords(lat: float, lng: float, api_key:str):
         "lon": f"{lng}",
         "appid": api_key,
         "lang": "zh_tw",
-        "units": "metrics"
+        "units": "metric"
     }
 
     try:
