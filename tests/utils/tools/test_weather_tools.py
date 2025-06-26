@@ -2,6 +2,7 @@ import pytest
 import requests
 from agent.utils.tools.weather_tools import get_geocode_of_location, get_weather_by_coords
 
+
 GEOCODE_SINGLE_LOCATION_RESPONSE = {
     "results": [
         {
@@ -64,6 +65,7 @@ WEATHER_MALFORMED_RESULT = {
     "name": "Taipei"
 }
 
+
 def setup_mock_api_response(mocker, status_code, json_response):
     mock_response = mocker.Mock()
     mock_response.status_code = status_code
@@ -117,6 +119,7 @@ def test_get_geocode_of_location_handles_network_error(mocker):
 
     assert result is None
 
+
 @pytest.mark.parametrize(
     "api_response, expected_result", 
     [
@@ -143,7 +146,6 @@ def test_get_geocode_of_location_handles_network_error(mocker):
     ]
 )
 def test_get_weather_by_coords_success(mocker, api_response, expected_result):
-
     setup_mock_api_response(mocker, 200, api_response)
     
     result = get_weather_by_coords(22.980, 120.230, "fake_owm_api_key")
