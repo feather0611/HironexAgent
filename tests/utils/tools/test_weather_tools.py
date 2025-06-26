@@ -54,6 +54,16 @@ WEATHER_NORMAL_RESULT = {
     "name": "Tainan City"
 }
 
+WEATHER_UNAUTHORIZED_RESULT = {
+    "cod": 401,
+    "message": "Invalid API key. Please see https://openweathermap.org/faq#error401 for more info."
+}
+
+WEATHER_MALFORMED_RESULT = {
+    "weather": [{"description": "晴時多雲"}],
+    "name": "Taipei"
+}
+
 def setup_mock_api_response(mocker, status_code, json_response):
     mock_response = mocker.Mock()
     mock_response.status_code = status_code
@@ -119,6 +129,16 @@ def test_get_geocode_of_location_handles_network_error(mocker):
                 "weather": "多雲"
             },
             id="case_happy_result"
+        ),
+        pytest.param(
+            WEATHER_MALFORMED_RESULT,
+            {
+                "location": "Taipei", 
+                "temperature": None,
+                "humidity": None,
+                "weather": "晴時多雲"
+            },
+            id="case_malformed_result"
         )
     ]
 )
@@ -132,12 +152,7 @@ def test_get_weather_by_coords_success(mocker, api_response, expected_result):
     assert result == expected_result
     
 def test_get_weather_by_coords_unauthorized(mocker):
-    mock_api_response = {
-        "cod": 401,
-        "message": "Invalid API key. Please see https://openweathermap.org/faq#error401 for more info."
-    }
-    
-    setup_mock_api_response(mocker, status_code=401, json_response=mock_api_response)
+    setup_mock_api_response(mocker, status_code=401, json_response=WEATHER_UNAUTHORIZED_RESULT)
 
     result = get_weather_by_coords(22.980, 120.230, "invalid_api_key")
 
@@ -149,21 +164,3 @@ def test_get_weather_by_coords_network_error(mocker):
     result = get_weather_by_coords(22.980, 120.230, "any_api_key")
 
     assert result is None
-
-def test_get_weather_by_coords_handles_malformed_data(mocker):
-    mock_api_response = {
-        "weather": [{"description": "晴時多雲"}],
-        "name": "Taipei"
-    }
-
-    setup_mock_api_response(mocker, status_code=200, json_response=mock_api_response)
-    
-    result = get_weather_by_coords(25.033, 121.5654, "fake_owm_api_key")
-
-    assert isinstance(result, dict)
-
-    assert result["location"] == "Taipei"
-    assert result["weather"] == "晴時多雲"
-
-    assert result["temperature"] is None
-    assert result["humidity"] is None
