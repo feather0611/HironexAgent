@@ -33,6 +33,11 @@ MULTIPLE_LOCATIONS_RESPONSE = {
     "status": "OK"
 }
 
+ZERO_RESULTS_RESPONSE = {
+    "results": [],
+    "status": "ZERO_RESULTS"
+}
+
 def setup_mock_api(mocker, status_code, json_response):
     mock_response = mocker.Mock()
     mock_response.status_code = status_code
@@ -49,6 +54,10 @@ def setup_mock_api(mocker, status_code, json_response):
         pytest.param(
             "東區", MULTIPLE_LOCATIONS_RESPONSE, 3,
             id="case_multiple_results_for_East_District"
+        ),
+        pytest.param(
+            "火山國", ZERO_RESULTS_RESPONSE, 0,
+            id="case_zero_results_for_non_existent_place"
         ),
     ]
 )
