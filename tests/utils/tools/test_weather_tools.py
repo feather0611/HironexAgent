@@ -39,6 +39,21 @@ GEOCODE_ZERO_RESULTS_RESPONSE = {
     "status": "ZERO_RESULTS"
 }
 
+WEATHER_NORMAL_RESULT = {
+    "weather": [{
+        "main": "Clouds",
+        "description": "多雲",
+    }],
+    "main": {
+        "temp": 29.5,
+        "feels_like": 33.22,
+        "temp_min": 29.73,
+        "temp_max": 29.73,
+        "humidity": 75,
+    },
+    "name": "Tainan City"
+}
+
 def setup_mock_api_response(mocker, status_code, json_response):
     mock_response = mocker.Mock()
     mock_response.status_code = status_code
@@ -92,32 +107,30 @@ def test_get_geocode_of_location_handles_network_error(mocker):
 
     assert result is None
 
-def test_get_weather_by_coords_success(mocker):
-    mock_api_response = {
-        "weather": [{
-            "main": "Clouds",
-            "description": "多雲",
-        }],
-        "main": {
-            "temp": 29.5,
-            "feels_like": 33.22,
-            "temp_min": 29.73,
-            "temp_max": 29.73,
-            "humidity": 75,
-        },
-        "name": "Tainan City"
-    }
+@pytest.mark.parametrize(
+    "api_response, expected_result", 
+    [
+        pytest.param(
+            WEATHER_NORMAL_RESULT,
+            {
+                "location": "Tainan City", 
+                "temperature": 29.5, 
+                "humidity": 75, 
+                "weather": "多雲"
+            },
+            id="case_happy_result"
+        )
+    ]
+)
+def test_get_weather_by_coords_success(mocker, api_response, expected_result):
 
-    setup_mock_api_response(mocker, 200, mock_api_response)
+    setup_mock_api_response(mocker, 200, api_response)
     
     result = get_weather_by_coords(22.980, 120.230, "fake_owm_api_key")
 
     assert isinstance(result, dict)
-    assert result["location"] == "Tainan City"
-    assert result["temperature"] == 29.5
-    assert result["humidity"] == 75
-    assert result["weather"] == "多雲"
-
+    assert result == expected_result
+    
 def test_get_weather_by_coords_unauthorized(mocker):
     mock_api_response = {
         "cod": 401,
