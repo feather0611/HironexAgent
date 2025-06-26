@@ -22,27 +22,14 @@ def get_geocode_of_location(location_name: str, api_key: str) -> list | None:
     }
 
     data = _api_request(base_url, params)
-    try:
-        response = requests.get(base_url, params=params, timeout=10)
-        response.raise_for_status()
-        data = response.json()
+    
+    if data is None:
+        return None  # 表示網路層級或 HTTP 錯誤
 
-        if data.get("status") == "OK" and data.get("results"):
-            api_results = data.get("results", [])
-
-            valid_results = [
-                result for result in api_results
-                if (
-                    location_name in result.get("formatted_address", "")
-                )
-            ]
-            return valid_results
-        else:
-            return []
-
-    except requests.exceptions.RequestException as e:
-        print(f"Geocoding API Request Failed: {e}")
-        return None
+    if data.get("status") == "OK" and data.get("results"):
+        return data["results"]
+    else:
+        return []
 
 
 def get_weather_by_coords(lat: float, lng: float, api_key:str):
