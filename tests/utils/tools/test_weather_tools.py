@@ -2,7 +2,7 @@ import pytest
 import requests
 from agent.utils.tools.weather_tools import get_geocode_of_location, get_weather_by_coords
 
-SINGLE_LOCATION_RESPONSE = {
+GEOCODE_SINGLE_LOCATION_RESPONSE = {
     "results": [
         {
             "formatted_address": "221台灣新北市汐止區",
@@ -13,7 +13,7 @@ SINGLE_LOCATION_RESPONSE = {
     "status": "OK"
 }
 
-MULTIPLE_LOCATIONS_RESPONSE = {
+GEOCODE_MULTIPLE_LOCATIONS_RESPONSE = {
     "results": [
         {
             "formatted_address": "300台灣新竹市東區",
@@ -34,36 +34,38 @@ MULTIPLE_LOCATIONS_RESPONSE = {
     "status": "OK"
 }
 
-ZERO_RESULTS_RESPONSE = {
+GEOCODE_ZERO_RESULTS_RESPONSE = {
     "results": [],
     "status": "ZERO_RESULTS"
 }
 
-def setup_mock_api(mocker, status_code, json_response):
+def setup_mock_api_response(mocker, status_code, json_response):
     mock_response = mocker.Mock()
     mock_response.status_code = status_code
     mock_response.json.return_value = json_response
+    if status_code >= 400:
+        mock_response.raise_for_status.side_effect = requests.exceptions.HTTPError(f"{status_code} Error")
     mocker.patch("agent.utils.tools.weather_tools.requests.get", return_value=mock_response)
 
 @pytest.mark.parametrize(
     "location_name, api_response, expected_count",
     [
         pytest.param(
-            "汐止", SINGLE_LOCATION_RESPONSE, 1,
+            "汐止", GEOCODE_SINGLE_LOCATION_RESPONSE, 1,
             id="case_single_result_for_Xizhi"
         ),
         pytest.param(
-            "東區", MULTIPLE_LOCATIONS_RESPONSE, 3,
+            "東區", GEOCODE_MULTIPLE_LOCATIONS_RESPONSE, 3,
             id="case_multiple_results_for_East_District"
         ),
         pytest.param(
-            "火山國", ZERO_RESULTS_RESPONSE, 0,
+            "火山國", GEOCODE_ZERO_RESULTS_RESPONSE, 0,
             id="case_zero_results_for_non_existent_place"
         ),
     ]
 )
 def test_get_geocode_of_location(mocker, location_name, api_response, expected_count):
-    setup_mock_api(mocker, status_code=200, json_response=api_response)
+    setup_mock_api_response(mocker, status_code=200, json_response=api_response)
 
     locations = get_geocode_of_location(location_name, 'fake_google_api_key')
 
@@ -102,11 +104,8 @@ def test_get_weather_by_coords_success(mocker):
         "name": "Tainan City"
     }
 
-    mock_response = mocker.Mock()
-    mock_response.status_code = 200
-    mock_response.json.return_value = mock_api_response
-    mocker.patch("agent.utils.tools.weather_tools.requests.get", return_value=mock_response)
-
+    setup_mock_api_response(mocker, 200, mock_api_response)
+    
     result = get_weather_by_coords(22.980, 120.230, "fake_owm_api_key")
 
     assert isinstance(result, dict)
@@ -116,18 +115,15 @@ def test_get_weather_by_coords_success(mocker):
     assert result["weather"] == "多雲"
 
 def test_get_weather_by_coords_unauthorized(mocker):
-    mock_response = mocker.Mock()
-    mock_response.status_code = 401
-    mock_response.raise_for_status.side_effect = requests.exceptions.HTTPError("401 Client Error: Unauthorized")
+    mock_api_response = {
+        "cod": 401,
+        "message": "Invalid API key. Please see https://openweathermap.org/faq#error401 for more info."
+    }
+    
+    setup_mock_api_response(mocker, status_code=401, json_response=mock_api_response)
 
-    mocker.patch("agent.utils.tools.weather_tools.requests.get", return_value=mock_response)
-
-    # 當 (When):
-    # 呼叫 get_weather_by_coords 函式
     result = get_weather_by_coords(22.980, 120.230, "invalid_api_key")
 
-    # 那麼 (Then):
-    # 我們應該會收到 None
     assert result is None
 
 def test_get_weather_by_coords_network_error(mocker):
@@ -146,11 +142,8 @@ def test_get_weather_by_coords_handles_malformed_data(mocker):
         "name": "Taipei"
     }
 
-    mock_response = mocker.Mock()
-    mock_response.status_code = 200
-    mock_response.json.return_value = mock_api_response
-    mocker.patch("agent.utils.tools.weather_tools.requests.get", return_value=mock_response)
-
+    setup_mock_api_response(mocker, status_code=200, json_response=mock_api_response)
+    
     result = get_weather_by_coords(25.033, 121.5654, "fake_owm_api_key")
 
     assert isinstance(result, dict)
