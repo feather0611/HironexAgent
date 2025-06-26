@@ -1,5 +1,16 @@
 import requests
 
+
+def _api_request(base_url, params):
+    try:
+        response = requests.get(base_url, params=params, timeout=10)
+        response.raise_for_status()
+        return response.json()
+    except requests.exceptions.RequestException as e:
+        print(f"API Request Failed: {e}")
+        return None 
+
+
 def get_geocode_of_location(location_name: str, api_key: str) -> list | None:
 
     base_url = "https://maps.googleapis.com/maps/api/geocode/json"
@@ -10,6 +21,7 @@ def get_geocode_of_location(location_name: str, api_key: str) -> list | None:
         "result_type": "administrative_area_level_1|administrative_area_level_2|administrative_area_level_3"
     }
 
+    data = _api_request(base_url, params)
     try:
         response = requests.get(base_url, params=params, timeout=10)
         response.raise_for_status()
@@ -47,7 +59,6 @@ def get_weather_by_coords(lat: float, lng: float, api_key:str):
         response = requests.get(base_url, params=params, timeout=10)
         response.raise_for_status()
         data = response.json()
-
 
         main_data = data.get("main", {})
         temp = main_data.get("temp")
