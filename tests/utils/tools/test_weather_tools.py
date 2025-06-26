@@ -47,6 +47,13 @@ def setup_mock_api_response(mocker, status_code, json_response):
         mock_response.raise_for_status.side_effect = requests.exceptions.HTTPError(f"{status_code} Error")
     mocker.patch("agent.utils.tools.weather_tools.requests.get", return_value=mock_response)
 
+def setup_mock_network_exception(mocker):
+    mocker.patch(
+        "agent.utils.tools.weather_tools.requests.get",
+        side_effect=requests.exceptions.RequestException("Simulated network connection error")
+    )
+    
+    
 @pytest.mark.parametrize(
     "location_name, api_response, expected_count",
     [
@@ -79,10 +86,7 @@ def test_get_geocode_of_location(mocker, location_name, api_response, expected_c
         assert "lng" in location_data["geometry"]["location"]
 
 def test_get_geocode_of_location_handles_network_error(mocker):
-    mocker.patch(
-        "agent.utils.tools.weather_tools.requests.get",
-        side_effect=requests.exceptions.RequestException("Simulated network error")
-    )
+    setup_mock_network_exception(mocker)
 
     result = get_geocode_of_location("任何地點", "fake_google_api_key")
 
@@ -127,10 +131,7 @@ def test_get_weather_by_coords_unauthorized(mocker):
     assert result is None
 
 def test_get_weather_by_coords_network_error(mocker):
-    mocker.patch(
-        "agent.utils.tools.weather_tools.requests.get",
-        side_effect=requests.exceptions.RequestException("Simulated network connection error")
-    )
+    setup_mock_network_exception(mocker)
 
     result = get_weather_by_coords(22.980, 120.230, "any_api_key")
 
