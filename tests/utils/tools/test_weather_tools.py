@@ -1,4 +1,5 @@
 import pytest
+import requests
 from agent.utils.tools.weather_tools import get_geocode_of_location
 
 SINGLE_LOCATION_RESPONSE = {
@@ -74,3 +75,22 @@ def test_get_geocode_of_location(mocker, location_name, api_response, expected_c
         assert location_name in location_data["formatted_address"]
         assert "lat" in location_data["geometry"]["location"]
         assert "lng" in location_data["geometry"]["location"]
+
+def test_get_geocode_of_location_handles_network_error(mocker):
+    """
+    GWT 場景四：當 API 請求因網路問題而失敗時，函式應回傳 None。
+    """
+    # 假設 (Given):
+    # 我們設定 mocker，讓 requests.get 在被呼叫時，直接拋出一個網路錯誤
+    mocker.patch(
+        "agent.utils.tools.weather_tools.requests.get",
+        side_effect=requests.exceptions.RequestException("Simulated network error")
+    )
+
+    # 當 (When):
+    # 使用任何地點名稱呼叫函式
+    result = get_geocode_of_location("任何地點", "fake_google_api_key")
+
+    # 那麼 (Then):
+    # 我們應該會收到 None
+    assert result is None
