@@ -1,6 +1,6 @@
 import pytest
 import requests
-from agent.utils.tools.weather_tools import get_geocode_of_location
+from agent.utils.tools.weather_tools import get_geocode_of_location, get_weather_by_coords
 
 SINGLE_LOCATION_RESPONSE = {
     "results": [
@@ -77,20 +77,86 @@ def test_get_geocode_of_location(mocker, location_name, api_response, expected_c
         assert "lng" in location_data["geometry"]["location"]
 
 def test_get_geocode_of_location_handles_network_error(mocker):
-    """
-    GWT 場景四：當 API 請求因網路問題而失敗時，函式應回傳 None。
-    """
-    # 假設 (Given):
-    # 我們設定 mocker，讓 requests.get 在被呼叫時，直接拋出一個網路錯誤
     mocker.patch(
         "agent.utils.tools.weather_tools.requests.get",
         side_effect=requests.exceptions.RequestException("Simulated network error")
     )
 
-    # 當 (When):
-    # 使用任何地點名稱呼叫函式
     result = get_geocode_of_location("任何地點", "fake_google_api_key")
+
+    assert result is None
+
+def test_get_weather_by_coords_success(mocker):
+    mock_api_response = {
+        "weather": [{
+            "main": "Clouds",
+            "description": "多雲",
+        }],
+        "main": {
+            "temp": 29.5,
+            "feels_like": 33.22,
+            "temp_min": 29.73,
+            "temp_max": 29.73,
+            "humidity": 75,
+        },
+        "name": "Tainan City"
+    }
+
+    mock_response = mocker.Mock()
+    mock_response.status_code = 200
+    mock_response.json.return_value = mock_api_response
+    mocker.patch("agent.utils.tools.weather_tools.requests.get", return_value=mock_response)
+
+    result = get_weather_by_coords(22.980, 120.230, "fake_owm_api_key")
+
+    assert isinstance(result, dict)
+    assert result["location"] == "Tainan City"
+    assert result["temperature"] == 29.5
+    assert result["humidity"] == 75
+    assert result["weather"] == "多雲"
+
+def test_get_weather_by_coords_unauthorized(mocker):
+    mock_response = mocker.Mock()
+    mock_response.status_code = 401
+    mock_response.raise_for_status.side_effect = requests.exceptions.HTTPError("401 Client Error: Unauthorized")
+
+    mocker.patch("agent.utils.tools.weather_tools.requests.get", return_value=mock_response)
+
+    # 當 (When):
+    # 呼叫 get_weather_by_coords 函式
+    result = get_weather_by_coords(22.980, 120.230, "invalid_api_key")
 
     # 那麼 (Then):
     # 我們應該會收到 None
     assert result is None
+
+def test_get_weather_by_coords_network_error(mocker):
+    mocker.patch(
+        "agent.utils.tools.weather_tools.requests.get",
+        side_effect=requests.exceptions.RequestException("Simulated network connection error")
+    )
+
+    result = get_weather_by_coords(22.980, 120.230, "any_api_key")
+
+    assert result is None
+
+def test_get_weather_by_coords_handles_malformed_data(mocker):
+    mock_api_response = {
+        "weather": [{"description": "晴時多雲"}],
+        "name": "Taipei"
+    }
+
+    mock_response = mocker.Mock()
+    mock_response.status_code = 200
+    mock_response.json.return_value = mock_api_response
+    mocker.patch("agent.utils.tools.weather_tools.requests.get", return_value=mock_response)
+
+    result = get_weather_by_coords(25.033, 121.5654, "fake_owm_api_key")
+
+    assert isinstance(result, dict)
+
+    assert result["location"] == "Taipei"
+    assert result["weather"] == "晴時多雲"
+
+    assert result["temperature"] is None
+    assert result["humidity"] is None
