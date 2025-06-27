@@ -4,7 +4,7 @@ from agent.utils.state import AppState
 def test_geocode_node_success_and_updates_state_correctly(mocker):
     initial_state: AppState = {
         "user_input": "汐止區",
-        "api_keys": {"google": "fake_google_key"},
+        "api_keys": {"google_map_api_key": "fake_google_key"},
         "choices": None,
         "final_answer": None,
         "error_message": None
@@ -24,10 +24,27 @@ def test_geocode_node_success_and_updates_state_correctly(mocker):
     assert result_update["choices"] == mock_tool_return_value
     assert "error_message" not in result_update
 
+def test_geocode_node_handles_miss_apikey():
+    initial_state: AppState = {
+        "user_input": "汐止",
+        "api_keys": {},
+        "choices": None,
+        "final_answer": None,
+        "error_message": None
+    }
+
+    result_update = geocode_node(initial_state)
+
+    assert isinstance(result_update, dict)
+    assert "error_message" in result_update
+    assert result_update["error_message"] is not None
+    assert result_update["error_message"] == "Google Maps API Key is missing"
+    assert "choices" not in result_update
+
 def test_geocode_node_handles_tool_failure(mocker):
     initial_state: AppState = {
         "user_input": "汐止",
-        "api_keys": {"google": "wrong_google_key"},
+        "api_keys": {"google_map_api_key": "wrong_google_key"},
         "choices": None,
         "final_answer": None,
         "error_message": None
@@ -42,5 +59,6 @@ def test_geocode_node_handles_tool_failure(mocker):
 
     assert isinstance(result_update, dict)
     assert "error_message" in result_update
-    assert result_update["error_message"] is not None 
+    assert result_update["error_message"] is not None
+    assert result_update["error_message"] == "Geocoding tool request failed, please check API key or network connection."
     assert "choices" not in result_update
