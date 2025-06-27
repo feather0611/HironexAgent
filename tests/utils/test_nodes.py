@@ -23,3 +23,24 @@ def test_geocode_node_success_and_updates_state_correctly(mocker):
     assert "choices" in result_update
     assert result_update["choices"] == mock_tool_return_value
     assert "error_message" not in result_update
+
+def test_geocode_node_handles_tool_failure(mocker):
+    initial_state: AppState = {
+        "user_input": "汐止",
+        "api_keys": {"google": "wrong_google_key"},
+        "choices": None,
+        "final_answer": None,
+        "error_message": None
+    }
+
+    mocker.patch(
+        "agent.utils.nodes.get_geocode_of_location",
+        return_value=None
+    )
+
+    result_update = geocode_node(initial_state)
+
+    assert isinstance(result_update, dict)
+    assert "error_message" in result_update
+    assert result_update["error_message"] is not None 
+    assert "choices" not in result_update
