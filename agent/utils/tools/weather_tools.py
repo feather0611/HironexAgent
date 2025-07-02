@@ -1,5 +1,7 @@
 import requests
+import logging
 
+logger = logging.getLogger(__name__)
 
 def _api_request(base_url, params):
     try:
@@ -7,12 +9,11 @@ def _api_request(base_url, params):
         response.raise_for_status()
         return response.json()
     except requests.exceptions.RequestException as e:
-        print(f"API Request Failed: {e}")
+        logger.exception(f"API Request Failed: {e}")
         return None 
 
 
 def get_geocode_of_location(location_name: str, api_key: str) -> list | None:
-
     base_url = "https://maps.googleapis.com/maps/api/geocode/json"
     params = {
         "address": f"{location_name}+tw",
@@ -57,6 +58,6 @@ def get_weather_by_coords(lat: float, lon: float, api_key:str) -> dict | None:
             "weather": weather_list[0].get("description") if weather_list else None,
         }
     except (KeyError, IndexError) as e:
-        print(f"Error when parsing data: {e}")
+        logger.exception(f"Error when parsing data: {e}")
         return None
     
