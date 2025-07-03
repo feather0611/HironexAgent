@@ -3,7 +3,7 @@ from agent.utils.state import AppState, create_app_state, create_tool_result, Ac
 
 
 def test_geocode_node_success_and_updates_state_correctly(mocker):
-    initial_state: AppState = create_app_state("請告訴我汐止的天氣",{"google_map_api_key": "fake_google_key"}, Action(tool="weather", tool_input="汐止"))
+    initial_state: AppState = create_app_state("請告訴我汐止的天氣",{"google_map_api_key": "fake_google_key"}, Action(tool="weather", tool_input={"location": "汐止"}))
 
     mock_tool_return_value = [{"display_name": "新北市汐止區", "lat": 25.06, "lon": 121.64}]
 
@@ -25,7 +25,7 @@ def test_geocode_node_success_and_updates_state_correctly(mocker):
     assert "error_message" not in geocode_result
 
 def test_geocode_node_handles_miss_apikey():
-    initial_state: AppState = create_app_state("請告訴我汐止的天氣", {}, Action(tool="weather", tool_input="汐止"))
+    initial_state: AppState = create_app_state("請告訴我汐止的天氣", {}, Action(tool="weather", tool_input={"location": "汐止"}))
 
     updated_state = geocode_node(initial_state)
 
@@ -42,7 +42,7 @@ def test_geocode_node_handles_miss_apikey():
     assert "result" not in geocode_result
 
 def test_geocode_node_handles_tool_failure(mocker):
-    initial_state: AppState = create_app_state("汐止天氣如何", {"google_map_api_key": "wrong_google_key"}, Action(tool="weather", tool_input="汐止"))
+    initial_state: AppState = create_app_state("汐止天氣如何", {"google_map_api_key": "wrong_google_key"}, Action(tool="weather", tool_input={"location": "汐止"}))
 
     mocker.patch(
         "agent.utils.nodes.get_geocode_of_location",
@@ -79,8 +79,26 @@ def test_geocode_node_handles_no_action():
     assert geocode_result["error_message"] == "App should not enter here when no action."
     assert "result" not in geocode_result
 
-def test_geocode_node_handles_no_query_location():
+def test_geocode_node_handles_no_tool_input():
     initial_state: AppState = create_app_state("你是誰啊？", {"google_map_api_key": "fake_google_key"}, action=create_action(tool="weather"))
+    
+    updated_state = geocode_node(initial_state)
+
+    updated_state = geocode_node(initial_state)
+
+    assert isinstance(updated_state, dict)
+    assert "geocode_result" in updated_state
+
+    geocode_result = updated_state["geocode_result"]
+    assert isinstance(geocode_result, dict)
+    assert geocode_result["pass_status"] == False
+    assert "error_message" in geocode_result
+    assert geocode_result["error_message"] is not None
+    assert geocode_result["error_message"] == "No tool input in geocode node"
+    assert "result" not in geocode_result
+    
+def test_geocode_node_handles_no_query_location():
+    initial_state: AppState = create_app_state("你是誰啊？", {"google_map_api_key": "fake_google_key"}, action=create_action(tool="weather", tool_input={}))
     
     updated_state = geocode_node(initial_state)
 

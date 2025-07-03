@@ -16,14 +16,24 @@ def geocode_node(state: AppState) -> dict:
             }
         }
         
-    query_location = app_action.get("tool_input")
+    action_input = app_action.get("tool_input")
+    if action_input is None:
+        return {
+            "geocode_result": {
+                "pass_status": False,
+                "error_message": "No tool input in geocode node"
+            }
+        }
+    
+    query_location = action_input.get("location")
     if query_location is None:
         return {
             "geocode_result": {
                 "pass_status": False,
                 "error_message": "Can't get any location to search"
             }
-        }    
+        } 
+    
     api_key = state["api_keys"].get("google_map_api_key")
     if not api_key:
         return {
