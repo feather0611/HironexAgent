@@ -10,8 +10,15 @@ def _api_request(base_url, params):
         return response.json()
     except requests.exceptions.RequestException as e:
         logger.exception(f"API Request Failed: {e}")
-        return None 
+        return None
 
+
+def create_geocode_result(result):
+   return {
+       "formatted_address": result["formatted_address"],
+       "lat": result["geometry"]["location"]["lat"],
+       "lon": result["geometry"]["location"]["lng"],
+   } 
 
 def get_geocode_of_location(location_name: str, api_key: str) -> list | None:
     base_url = "https://maps.googleapis.com/maps/api/geocode/json"
@@ -28,7 +35,8 @@ def get_geocode_of_location(location_name: str, api_key: str) -> list | None:
         return None
 
     if data.get("status") == "OK" and data.get("results"):
-        return data["results"]
+        results = data.get("results")
+        return [ create_geocode_result(result) for result in results ]
     else:
         return []
 

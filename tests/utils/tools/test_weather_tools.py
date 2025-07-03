@@ -109,8 +109,8 @@ def test_get_geocode_of_location(mocker, location_name, api_response, expected_c
 
     for location_data in locations:
         assert location_name in location_data["formatted_address"]
-        assert "lat" in location_data["geometry"]["location"]
-        assert "lng" in location_data["geometry"]["location"]
+        assert "lat" in location_data
+        assert "lon" in location_data
 
 def test_get_geocode_of_location_handles_network_error(mocker):
     setup_mock_network_exception(mocker)

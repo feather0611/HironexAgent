@@ -67,8 +67,8 @@ def test_weather_node_success_and_updates_state_correctly(mocker):
     mock_geocode_result = create_tool_result(True, [
         {
             "formatted_address": "701台灣台南市東區",
-            "geometry": {"location": {"lat": 22.980, "lng": 120.230}},
-            "types": ["administrative_area_level_3", "political"]
+            "lat": 22.980, 
+            "lon": 120.230
         }
     ])
     

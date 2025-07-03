@@ -64,22 +64,22 @@ def weather_node(state: AppState) -> dict:
             }
         }
     
-    query = geocode_locations[0].get("geometry").get("location")
+    query = geocode_locations[0]
     if not query:
         return {
             "weather_result": {
                 "pass_status": False, 
-                "error_message": "Can't find location in geocode response"
+                "error_message": "Can't find geocode in location"
             }
         }
     
-    result = get_weather_by_coords(query["lat"], query["lng"], owm_api_key)
+    result = get_weather_by_coords(query["lat"], query["lon"], owm_api_key)
     
     if result is None:
         return {
             "weather_result": {
                 "pass_status": False, 
-                "error_message": "weather query failed, please check API key or network connection."
+                "error_message": "Weather query failed, please check API key or network connection."
             }
         }
     
