@@ -20,4 +20,4 @@ graph.add_conditional_edges(source="geocode", path=route_after_geocoding, path_m
 })
 
 graph.add_edge("get_weather", END)
-app = graph.compile()
+weather_agent = graph.compile()

@@ -4,7 +4,7 @@ import sys
 
 from dotenv import load_dotenv
 
-from agent.agent import app
+from agent.agent import weather_agent
 from agent.utils.state import create_app_state
 
 
@@ -52,7 +52,7 @@ if __name__ == "__main__":
             
         app_state = create_app_state(user_input, api_keys)
         
-        final_state = app.invoke(app_state)
+        final_state = weather_agent.invoke(app_state)
         
         responses = final_state.get("weather", final_state.get("error_message", "I got nothing."))
         print(responses)
