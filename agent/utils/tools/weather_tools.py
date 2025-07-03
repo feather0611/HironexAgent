@@ -52,7 +52,6 @@ def get_weather_by_coords(lat: float, lon: float, api_key:str) -> dict | None:
         main_data = data.get("main", {})
         weather_list = data.get("weather", [])
         return {
-            "location": data.get("name"),
             "temperature": main_data.get("temp"),
             "humidity": main_data.get("humidity"),
             "weather": weather_list[0].get("description") if weather_list else None,

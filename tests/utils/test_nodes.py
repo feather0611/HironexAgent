@@ -21,13 +21,13 @@ def test_geocode_node_success_and_updates_state_correctly(mocker):
 def test_geocode_node_handles_miss_apikey():
     initial_state: AppState = create_app_state("汐止", {})
 
-    result_update = geocode_node(initial_state)
+    updated_result = geocode_node(initial_state)
 
-    assert isinstance(result_update, dict)
-    assert "error_message" in result_update
-    assert result_update["error_message"] is not None
-    assert result_update["error_message"] == "Google Maps API Key is missing"
-    assert "geocode_locations" not in result_update
+    assert isinstance(updated_result, dict)
+    assert "error_message" in updated_result
+    assert updated_result["error_message"] is not None
+    assert updated_result["error_message"] == "Google Maps API Key is missing"
+    assert "geocode_locations" not in updated_result
 
 def test_geocode_node_handles_tool_failure(mocker):
     initial_state: AppState = create_app_state("汐止", {"google_map_api_key": "wrong_google_key"})
@@ -37,13 +37,13 @@ def test_geocode_node_handles_tool_failure(mocker):
         return_value=None
     )
 
-    result_update = geocode_node(initial_state)
+    updated_result = geocode_node(initial_state)
 
-    assert isinstance(result_update, dict)
-    assert "error_message" in result_update
-    assert result_update["error_message"] is not None
-    assert result_update["error_message"] == "Geocoding tool request failed, please check API key or network connection."
-    assert "geocode_locations" not in result_update
+    assert isinstance(updated_result, dict)
+    assert "error_message" in updated_result
+    assert updated_result["error_message"] is not None
+    assert updated_result["error_message"] == "Geocoding tool request failed, please check API key or network connection."
+    assert "geocode_locations" not in updated_result
     
 def test_weather_node_success_and_updates_state_correctly(mocker):
     initial_state: AppState = create_app_state(
@@ -73,4 +73,19 @@ def test_weather_node_success_and_updates_state_correctly(mocker):
     updated_result = weather_node(initial_state)
     
     assert isinstance(updated_result, dict)
+    assert "weather" in updated_result
+    assert updated_result["weather"] == mock_tool_return_value
+    assert "error_message" not in updated_result
+    
+def test_weather_node_handles_miss_apikey():
+    initial_state: AppState = create_app_state("汐止", {})
+    
+    updated_result = weather_node(initial_state)
+    
+    assert isinstance(updated_result, dict)
+    assert "error_message" in updated_result
+    assert updated_result["error_message"] is not None
+    assert updated_result["error_message"] == "OWM API Key is missing"
+    assert "weather" not in updated_result
+    
     

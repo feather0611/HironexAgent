@@ -115,7 +115,7 @@ def test_get_geocode_of_location(mocker, location_name, api_response, expected_c
 def test_get_geocode_of_location_handles_network_error(mocker):
     setup_mock_network_exception(mocker)
 
-    result = get_geocode_of_location("任何地點", "fake_google_api_key")
+    result = get_geocode_of_location("Any place", "fake_google_api_key")
 
     assert result is None
 
@@ -126,7 +126,6 @@ def test_get_geocode_of_location_handles_network_error(mocker):
         pytest.param(
             WEATHER_NORMAL_RESULT,
             {
-                "location": "Tainan City", 
                 "temperature": 29.5, 
                 "humidity": 75, 
                 "weather": "多雲"
@@ -136,7 +135,6 @@ def test_get_geocode_of_location_handles_network_error(mocker):
         pytest.param(
             WEATHER_MALFORMED_RESULT,
             {
-                "location": "Taipei", 
                 "temperature": None,
                 "humidity": None,
                 "weather": "晴時多雲"

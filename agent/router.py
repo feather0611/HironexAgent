@@ -1,7 +1,12 @@
+import logging
+
 from agent.utils.state import AppState
+
+logger = logging.getLogger(__name__)
 
 def route_after_geocoding(state: AppState) -> str:
     locations = state.get("geocode_locations")
+    
     error_message = state.get("error_message")
     
     if locations is None and error_message:
