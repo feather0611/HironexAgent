@@ -5,10 +5,15 @@ class ToolResult(TypedDict):
     result: Optional[List[Dict[str, Any]] | Dict[str, Any]]
     error_message: Optional[str]    
 
+class Action(TypedDict):
+    tool: str
+    query: Optional[str]
+
 class AppState(TypedDict):
     user_input: str
     api_keys: Dict[str, str]
     query_location: Optional[str]
+    action: Optional[Action]
     geocode_result: Optional[ToolResult]
     weather_result: Optional[ToolResult]
     final_answer: Optional[str]
@@ -29,6 +34,7 @@ def create_app_state(
     user_input: str,
     api_keys: Dict[str, str],
     query_location: Optional[str] = None,
+    action: Optional[Action] = None,
     geocode_result: Optional[ToolResult]=None,
     weather_result: Optional[ToolResult]=None,
     final_answer: Optional[str]=None,
@@ -38,6 +44,7 @@ def create_app_state(
         "user_input": user_input,
         "api_keys": api_keys,
         "query_location": query_location,
+        "action": action,
         "geocode_result": geocode_result,
         "weather_result": weather_result,
         "final_answer": final_answer,
