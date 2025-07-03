@@ -7,7 +7,14 @@ logger = logging.getLogger(__name__)
 
 def geocode_node(state: AppState) -> dict:
 
-    user_input = state["user_input"]
+    query_location = state.get("query_location")
+    if query_location is None:
+        return {
+            "geocode_result": {
+                "pass_status": False,
+                "error_message": "Can't get any location to search"
+            }
+        }    
     api_key = state["api_keys"].get("google_map_api_key")
 
     if not api_key:
@@ -18,7 +25,8 @@ def geocode_node(state: AppState) -> dict:
             }
         }
 
-    results = get_geocode_of_location(user_input, api_key)
+
+    results = get_geocode_of_location(query_location, api_key)
 
     if results is None:
         return {

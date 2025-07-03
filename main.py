@@ -50,7 +50,7 @@ if __name__ == "__main__":
         if not user_input:
             continue
             
-        app_state = create_app_state(user_input, api_keys)
+        app_state = create_app_state(user_input, api_keys, user_input)
         
         final_state = weather_agent.invoke(app_state)
         

@@ -8,6 +8,7 @@ class ToolResult(TypedDict):
 class AppState(TypedDict):
     user_input: str
     api_keys: Dict[str, str]
+    query_location: Optional[str]
     geocode_result: Optional[ToolResult]
     weather_result: Optional[ToolResult]
     final_answer: Optional[str]
@@ -27,6 +28,7 @@ def create_tool_result(
 def create_app_state(
     user_input: str,
     api_keys: Dict[str, str],
+    query_location: Optional[str] = None,
     geocode_result: Optional[ToolResult]=None,
     weather_result: Optional[ToolResult]=None,
     final_answer: Optional[str]=None,
@@ -35,6 +37,7 @@ def create_app_state(
     return {
         "user_input": user_input,
         "api_keys": api_keys,
+        "query_location": query_location,
         "geocode_result": geocode_result,
         "weather_result": weather_result,
         "final_answer": final_answer,
