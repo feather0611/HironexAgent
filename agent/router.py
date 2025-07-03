@@ -5,18 +5,18 @@ from agent.utils.state import AppState
 logger = logging.getLogger(__name__)
 
 def route_after_geocoding(state: AppState) -> str:
-    locations = state.get("geocode_locations")
+    geocode_result = state.get("geocode_result")
     
-    error_message = state.get("error_message")
+    error_message = geocode_result.get("error_message")
+    
+    locations = geocode_result.get("result")
     
     if locations is None and error_message:
          return 'error'
-    
-    count_of_locations = len(locations)
-    
-    if count_of_locations > 1:
+
+    if len(locations) > 1:
         return 'ask_clarification'
-    elif count_of_locations == 0:
+    elif len(locations) == 0:
         return 'not_found'
     
     return 'get_weather'

@@ -7,25 +7,25 @@ from agent.utils.state import AppState, create_app_state
     "current_state, expected_route",
     [
         pytest.param(
-            {"geocode_locations": [{"name": "地點A"}]},
+            {"geocode_result": {"result": [{"name": "地點A"}], "pass_status": True}},
             "get_weather",
             id="route_to_get_weather_when_one_choice"
         ),
 
         pytest.param(
-            {"geocode_locations": [{"name": "地點A"}, {"name": "地點B"}]},
+            {"geocode_result": {"result": [{"name": "地點A"}, {"name": "地點B"}], "pass_status": True}},
             "ask_clarification",
             id="route_to_ask_clarification_when_multiple_choices"
         ),
 
         pytest.param(
-            {"geocode_locations": []},
+            {"geocode_result": {"result": [], "pass_status": False}},
             "not_found",
             id="route_to_not_found_when_choices_is_empty"
         ),
 
         pytest.param(
-            {"error_message": "An error occurred"},
+            {"geocode_result": {"error_message": "An error occurred", "pass_status": False}},
             "error",
             id="route_to_error_when_error_message_exists"
         ),
@@ -34,7 +34,8 @@ from agent.utils.state import AppState, create_app_state
 def test_route_after_geocoding(current_state, expected_route):
     error_message = current_state.get("error_message")
 
-    state: AppState = create_app_state("any", {}, geocode_locations=current_state.get("geocode_locations"), error_message=error_message)
+    state: AppState = create_app_state("any", {}, geocode_result=current_state.get("geocode_result"),
+                                       error_message=error_message)
 
     next_node = route_after_geocoding(state)
 
