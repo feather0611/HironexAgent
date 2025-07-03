@@ -20,4 +20,4 @@ def geocode_node(state: AppState) -> dict:
         return {"error_message": "Geocoding tool request failed, please check API key or network connection."}
 
     logger.info(f"    -> Geocoding tool found {len(results)} of possible locations")
-    return {"choices": results}
+    return {"geocode_locations": results}
