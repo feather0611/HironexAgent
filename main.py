@@ -54,7 +54,7 @@ if __name__ == "__main__":
         
         final_state = weather_agent.invoke(app_state)
         
-        responses = final_state.get("weather", final_state.get("error_message", "I got nothing."))
+        responses = final_state.get("weather_result", final_state.get("error_message", "I got nothing."))
         print(responses)
         
         
