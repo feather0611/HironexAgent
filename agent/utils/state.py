@@ -7,12 +7,11 @@ class ToolResult(TypedDict):
 
 class Action(TypedDict):
     tool: str
-    query: Optional[str]
+    tool_input: Optional[Any]
 
 class AppState(TypedDict):
     user_input: str
     api_keys: Dict[str, str]
-    query_location: Optional[str]
     action: Optional[Action]
     geocode_result: Optional[ToolResult]
     weather_result: Optional[ToolResult]
@@ -30,10 +29,18 @@ def create_tool_result(
         "error_message": error_message,
     }
 
+def create_action(
+        tool: str,
+        tool_input: Optional[Any] = None
+):
+    return {
+        "tool": tool,
+        "tool_input": tool_input,
+    }
+
 def create_app_state(
     user_input: str,
     api_keys: Dict[str, str],
-    query_location: Optional[str] = None,
     action: Optional[Action] = None,
     geocode_result: Optional[ToolResult]=None,
     weather_result: Optional[ToolResult]=None,
@@ -43,7 +50,6 @@ def create_app_state(
     return {
         "user_input": user_input,
         "api_keys": api_keys,
-        "query_location": query_location,
         "action": action,
         "geocode_result": geocode_result,
         "weather_result": weather_result,

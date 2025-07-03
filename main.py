@@ -5,7 +5,7 @@ import sys
 from dotenv import load_dotenv
 
 from agent.agent import weather_agent
-from agent.utils.state import create_app_state
+from agent.utils.state import create_app_state, create_action
 
 
 def setup_logging():
@@ -50,7 +50,7 @@ if __name__ == "__main__":
         if not user_input:
             continue
             
-        app_state = create_app_state(user_input, api_keys, user_input)
+        app_state = create_app_state(user_input, api_keys, create_action("weather", user_input))
         
         final_state = weather_agent.invoke(app_state)
         
