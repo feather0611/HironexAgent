@@ -1,6 +1,7 @@
 import pytest
 from agent.router import route_after_geocoding
-from agent.utils.state import AppState
+from agent.utils.state import AppState, create_app_state
+
 
 @pytest.mark.parametrize(
     "current_state, expected_route",
@@ -32,13 +33,8 @@ from agent.utils.state import AppState
 )
 def test_route_after_geocoding(current_state, expected_route):
     error_message = current_state.get("error_message")
-    state: AppState = {
-        "user_input": "any",
-        "api_keys": {},
-        "geocode_locations": current_state.get("geocode_locations"),
-        "final_answer": None,
-        "error_message": error_message if isinstance(error_message, str) else None,
-    }
+
+    state: AppState = create_app_state("any", {}, geocode_locations=current_state.get("geocode_locations"), error_message=error_message)
 
     next_node = route_after_geocoding(state)
 
